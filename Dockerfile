@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM nvidia/cuda:11.7.1-runtime-ubuntu20.04
+FROM nvidia/cuda:11.6.2-runtime-ubuntu20.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -21,7 +21,7 @@ LABEL org.opencontainers.image.version = "2.0"
 LABEL org.opencontainers.image.authors = "contact@eleuther.ai"
 LABEL org.opencontainers.image.source = "https://www.github.com/eleutherai/gpt-neox"
 LABEL org.opencontainers.image.licenses = " Apache-2.0"
-LABEL org.opencontainers.image.base.name="docker.io/nvidia/cuda:11.7.1-runtime-ubuntu20.04"
+LABEL org.opencontainers.image.base.name="docker.io/nvidia/cuda:11.6.2-runtime-ubuntu20.04"
 
 #### System package (uses default Python 3 version in Ubuntu 20.04)
 RUN apt-get update -y && \
@@ -65,7 +65,9 @@ RUN mkdir -p /build && \
 
 # Needs to be in docker PATH if compiling other items & bashrc PATH (later)
 ENV PATH=/usr/local/mpi/bin:${PATH} \
-    LD_LIBRARY_PATH=/usr/local/lib:/usr/local/mpi/lib:/usr/local/mpi/lib64:${LD_LIBRARY_PATH}
+    LD_LIBRARY_PATH=/usr/local/lib:/usr/local/mpi/lib:/usr/local/mpi/lib64:${LD_LIBRARY_PATH} \
+    NCCL_SOCKET_IFNAME=eth1 \
+    CUDA_DEVICE_MAX_CONNECTIONS=1
 
 # Create a wrapper for OpenMPI to allow running as root by default
 RUN mv /usr/local/mpi/bin/mpirun /usr/local/mpi/bin/mpirun.real && \
@@ -88,7 +90,7 @@ RUN mkdir -p /home/mchorse/.ssh /job && \
     echo 'export LD_LIBRARY_PATH=/usr/local/lib:/usr/local/mpi/lib:/usr/local/mpi/lib64:$LD_LIBRARY_PATH' >> /home/mchorse/.bashrc
 
 #### Python packages
-RUN pip install torch==1.13.0+cu117 torchvision==0.14.0+cu117 torchaudio==0.13.0 --extra-index-url https://download.pytorch.org/whl/cu117 && pip cache purge
+RUN pip install torch==1.13.1+cu116 torchvision==0.14.1+cu116 torchaudio==0.13.1 --extra-index-url https://download.pytorch.org/whl/cu116 && pip cache purge
 COPY requirements/requirements.txt .
 COPY requirements/requirements-wandb.txt .
 COPY requirements/requirements-onebitadam.txt .
